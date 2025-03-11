@@ -184,48 +184,109 @@ This gives us,
 \begin{frame}{Cheap Cost Function}
 
 We want to make $L_{\theta_{old}}(\theta)$ fast to compute. 
-
-% This more simple than I realized it shouldn't be one at a time, will remove. 
 \begin{itemize}
     {\item $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \sum_a \pi_{\theta}(a \vert s) A_{\theta_{old}}(s,a) \hspace{5pt} \left(\text{Definition of $L$}\right)$}
     {\item $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}(a \vert s)} \cdot A_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced sum over actions, with expectation}. \right)$}
-   {\item  $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}( a \vert s)} \cdot Q_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced A with an estimator $\hat{A}$}. \right)$ }
+   {\item  $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}( a \vert s)} \cdot \hat{A}_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced A with an estimator $\hat{A}$}. \right)$ }
 \end{itemize}
 \end{frame}
 
+
+% \begin{frame}{Cheap constrained optimization solver}
+%     \begin{equation*}
+%         \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
+%          \text{subject to }  \hspace{1pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+%     \end{equation*}
+    
+%     We use two steps, 
+%     \begin{itemize}
+%         \item Compute Search Direction
+%         \item Line Search in found Direction
+%     \end{itemize}
+    
+%     \end{frame}
 
 \begin{frame}{Cheap constrained optimization solver}
+\begingroup 
+\Large
 \begin{equation*}
     \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
-     \text{subject to }  \hspace{1pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+    \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
 \end{equation*}
+\endgroup
 
-We use two steps, 
-\begin{itemize}
-    \item Compute Search Direction
-    \item Line Search in found Direction
-\end{itemize}
-
+\only<2>{\begin{figure}
+    \begin{center}
+        \includegraphics[width=1.1\linewidth]{20241114_122744.jpg}
+        \label{fig:joke2}
+    \end{center}
+\end{figure}}
 \end{frame}
 
-\begin{frame}{Computing Search Direction}
+\begin{frame}{Cheap constrained optimization solver}
+    \begin{equation*}
+        \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
+        \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+    \end{equation*}
+\only<1->{First Order of Taylor Expansion to $L_{\theta_{old}}(\theta)$}    
+\only<2>{\begin{align*} 
+    & L_{\theta_{old}}(\theta) \approx L_{\theta_{old}}(\theta_{old}) + g^T (\theta - \theta_{old}) \\ 
+    & L_{\theta_{old}}(\theta) \approx 0 + g^T (\theta - \theta_{old}) \\
+    & L_{\theta_{old}}(\theta) \approx g^T (\theta - \theta_{old}) 
+\end{align*}}
+\end{frame}
+
+
+\begin{frame}{Cheap constrained optimization solvers}
+    \begin{equation*}
+                \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
+                 \text{subject to }  \hspace{1pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+        \end{equation*}
+    
+    \only<1->{Second Order of Taylor Expansion of Contraint}    
+    \only<2>{\begin{align*} 
+        & \hat{D}_{KL} (\theta_{old} \vert\vert \theta) \approx \hat{D}_{KL} (\theta_{old} \vert\vert \theta_{old})  + \nabla_{\theta} \hat{D}_{KL} (\theta_{old} \vert\vert \theta)\vert_{\theta_{old}} \cdot(\theta - \theta_{old}) + \\
+        & \hspace{15pt} \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) \\
+        & \hat{D}_{KL} (\theta_{old} \vert\vert \theta) \approx 0 + 0 + \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) \\ 
+        &  \hat{D}_{KL} (\theta_{old} \vert\vert \theta) \approx  \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old})
+    \end{align*}}
+\end{frame}
+
+\begin{frame}{Cheap constrained optimization solvers}
+    We now have a new constrained optimization problem, 
+    \begin{align*}
+        & \text{argmax}_{\theta}\hspace{4pt} g^T (\theta - \theta_{old})  \\
+        & \text{subject to  } \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) \leq \delta
+    \end{align*}
+Now since it's a nice quadratic/convex contrainst we can solve, 
+
+\begin{equation*}
+    \theta = \theta_{old} + \sqrt{\frac{2\delta}{g^tH^{-1}g}} H^{-1}g. 
+\end{equation*}
+\end{frame}
+
+\begin{frame}{$H^{-1}g$}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{trpo_funny_reference.png}
+    \includegraphics[width=1.1\linewidth]{trpo_funny_reference.png}
     \label{fig:joke}
-\end{figure}
-
-    
+\end{figure}    
 \end{frame}
 
 \begin{frame}{Line Search}
-    
+    Our approximations have gone back to bite us. We need to check that our ubdpates don't exceed our \textit{actual} constraint using a line search. 
 \end{frame}
 
 
 \begin{frame}{Trust Region Policy Optimization}
- % OpenAI PsuedoCode Maybe? Bit too complicated for the slide   
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=1\linewidth]{trpo_algorithm_pseudocode.png}
+        \label{fig:algo_pseudocode}
+    \end{figure}    
+
     
 \end{frame}
 
