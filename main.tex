@@ -313,12 +313,62 @@ Now since it's a nice quadratic/convex contrainst we can solve,
 
 \end{frame}
 
+\begin{frame}{Next Steps}
+    \begin{itemize}
+        \item The Chosen Path
+        \begin{itemize}
+            \item Clipping
+            \item Hyperparameter tuning
+        \end{itemize}
+        \vspace{10pt}
+        \item Other Approaches:
+        \begin{itemize}
+            \item More precise approximations $\rightarrow$ no more line search
+            \item Assumptions about policy structure $\rightarrow$ tighter bound 
+            \item Assumptions about function approximator $\rightarrow$ better notation of small step
+        \end{itemize}
+    \end{itemize}
+
+\end{frame}
+
+\newcommand{\bluecheck}{}%
+\DeclareRobustCommand{\greencheck}{%
+  \tikz\fill[scale=0.4, color=green]
+  (0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;%
+}
+\newcommand{\tikzxmark}{%
+\tikz[scale=0.23, color=red] {
+    \draw[line width=0.7,line cap=round] (0,0) to [bend left=6] (1,1);
+    \draw[line width=0.7,line cap=round] (0.2,0.95) to [bend right=3] (0.8,0.05);
+}}
+
+
+
+\begin{frame}{Critiques of the Paper}
+   
+    %\scalebox{1.5}{TLDR : Content: \greencheck \hspace{4pt} Presentation \tikzxmark}
+    \begin{itemize}
+        \item They leave out critical implementation details \citep{deepRL_matters}. 
+        \item They compare 'Vine' and 'Path', and vine is a different problem formulation 
+        \item  \href{https://jonathan-hui.medium.com/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a}{TRPO-Blog for Details}
+    \end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{TRPO_Issues.png}
+    \label{fig:issues}
+\end{figure}
+
+\end{frame}
+
+
 \begin{frame}{Thank you for listening}
 
 \href{https://www.youtube.com/watch?v=ovDfhvjpQd8&t=387s}{Robots following TRPO Policies}
 
-
 \end{frame}
+
+
 
 
 \begin{frame}{References}
