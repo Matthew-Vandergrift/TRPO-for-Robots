@@ -1,0 +1,269 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Welcome to Overleaf --- just edit your LaTeX on the left,
+% and we'll compile it for you on the right. If you open the
+% 'Share' menu, you can invite other users to edit at the same
+% time. See www.overleaf.com/learn for more info. Enjoy!
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{beamer}
+\usepackage{tikz}
+\usepackage{natbib}
+\usepackage{doi}
+\usepackage{subcaption}
+\usepackage{bibentry}
+
+\usetheme{Frankfurt}
+\usecolortheme{seahorse} 
+\setbeamercolor*{item}{fg=blue}
+\captionsetup{labelfont={color=blue}}
+\usepackage{algorithm,algorithmic}
+
+\title{Trust Region Policy Optimization (TRPO)}
+\subtitle{Original Paper by \cite{trpo_paper}}
+
+%\title{Can we Agree to Disagree?}
+\author{Matthew Vandergrift}
+\institute[CMPUT 603]{Robot Learning Seminar Presentation}
+\date{March 2025}
+
+%TODO:
+% add slide numbers
+% 
+
+
+% Testing Automated Video
+\usepackage{hyperref}
+
+% 
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Motivation}
+\begin{frame}{Motivation} 
+\includegraphics<1>[width=10cm,height=10cm,keepaspectratio]{Venn Diagram for Robot Learning .png}%
+\includegraphics<2>[width=10cm,height=10cm,keepaspectratio]{Venn_Diagram_for_Robot_Learning _1.png}% 
+\includegraphics<3>[width=10cm,height=10cm,keepaspectratio]{Venn Diagram_for_Robot_Learning_2.png}%
+\end{frame}
+
+
+
+\begin{frame}{Existing Solutions}
+
+    \begin{itemize}
+        \item Reinforce
+        \item Basic Actor-Critic Algorithms 
+        \item Natural Policy Gradients 
+        \item Derivative Free Methods: cross-entropy method, covariance matrix adaptation. 
+    \end{itemize}
+    
+\end{frame}
+
+% Make this pretty, useful for introducing eta notation
+
+\section{The Problem}
+\begin{frame}{Once again, ... RL }
+    "RL is computational framework for learning from interaction" \cite{rlbook}. The agent interacts with an environment with the goal of maximizing expected return. Let us denote expected return for a particular policy by $\eta(\pi)$. 
+
+% Toss Eugene's RL interaction diagram
+
+
+
+\end{frame}
+
+
+% Building up to this Closeness Issue more mathematically 
+
+
+\begin{frame}{Advantage Function}    
+Recall the advantage function $A_{\pi}(s,a)$ defined as, 
+\begin{equation*}
+    A_{\pi}(s,a) =\  Q_{\pi}(s,a) - V_{\pi}(s)
+\end{equation*}
+This function tells us how "good" taking action is compared to the average action. 
+\end{frame}
+
+
+\begin{frame}{Policy Improvement via Advantage}
+Since policies are just collections of actions, we can use advantage function to evaluate them. Let $\pi$ and $\pi^\prime$ be two different policies. Equation $\ref{policy_a_2}$ gives a way to write the performance of $\pi^\prime$ using the performance of $\pi$ and the advantage function. 
+
+\begin{align}
+    &\eta(\pi^\prime) = \eta(\pi) + \sum_s \mu_{\pi^\prime}(s) \sum_a \pi^\prime(a \vert  s) A_{\pi}(s,a). \label{policy_a_2}
+\end{align} 
+
+Proof in appendix
+
+\end{frame}
+
+\begin{frame}{RL is Solved!}
+At first glance we have a solution! 
+
+\begin{algorithm}[H]
+\caption{The Perfect RL Algorithm}
+\begin{algorithmic}[1]
+\REQUIRE $\pi$ \text{ and } $ \eta(\pi)$
+\STATE $\text{max}_{\pi^\prime} \left( \eta(\pi) + \sum_s \mu_{\pi^\prime}(s) \sum_a \pi^\prime(a \vert  s) A_{\pi}(s,a) \right)$
+\end{algorithmic}
+\end{algorithm}
+
+This doesn't work because we have a dependence on the policy distribution which is not something we have access to when considering $\pi^\prime$.
+
+\end{frame}
+
+\section{A Solution in Theory}
+
+\begin{frame}{Dealing with $\mu_{\pi^\prime}$}
+
+\begin{itemize}
+    \item Let's use $\mu_{\pi}$ instead of $\mu_{\pi^\prime}$
+    \item Define $L_{\pi}(\pi^\prime) = \eta(\pi) +  \sum_s \mu_{\pi}(s) \sum_a \pi^\prime(a \vert  s) A_{\pi}(s,a) $
+    \item Assume $\pi$ is a parameterized by weights $\theta$. 
+    \item Gives us a local first order approximation, $\nabla_\theta L_{\pi_{\theta_0}} (\theta_\theta) \vert_{\theta=\theta_0}  = \nabla_\theta \eta_{\pi_{\theta_0}} (\theta_\theta) \vert_{\theta=\theta_0}$
+    \item If we take \textbf{small} steps in $\theta$ then we can use our 'Perfect RL algorithm'.
+    % \item We have re-covered the problem Simone talked about, our approximation is only a good one local so if we move too fast things break.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{What is a small step?}
+A Major Contribution of the Paper is the following bound, 
+
+\begin{theorem}
+Let $D_{KL}^{\text{max}}(\pi, \pi^\prime) := \text{max}_s D_{KL}\left(\pi(* \vert S) \vert\vert \pi^\prime(*\lvert s) \right).$ We then have that, 
+$\eta(\pi^\prime) \geq L_{\pi}(\pi^\prime) - C D_{KL}^{\text{max}}(\pi, \pi^\prime)$ where $C = \frac{4 \epsilon \gamma}{(1-\gamma)^2}$
+\end{theorem}
+This  means we can bound the improvement between any-two policies based on their KL divergence. This means if we optimize within a certain KL distance we can \textit{guarantee improvement}. 
+\end{frame}
+
+
+% Change this title the bit might be old 
+\begin{frame}{A More Perfect RL Algorithm}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{TRPO_algo .png}
+        \label{fig:enter-label}
+    \end{figure}
+
+The constraint is not computable due to $\text{max}_{s} f(s)$.
+\end{frame}
+
+\section{A Solution in Practice}
+
+\begin{frame}{The final steps}
+    \begin{itemize}
+        \item Computable constraint 
+        \vspace{4pt}
+        \item Cheap cost function 
+        \vspace{4pt}
+        \item Cheap constrained optimization solver
+    \end{itemize}
+    
+\end{frame}
+
+\begin{frame}{Computable Constraint}
+We want to make our constrained optimization solvable.
+
+\begin{itemize}
+    \item Get rid of max KL constraint over the whole state space. 
+    \item Define 'Average' KL, $\bar{D}_{KL} := \mathbb{E}_{s \sim \mu_{\pi_{\theta}}} \left[ D_{KL}\left(\pi_{\theta}(* \vert S) \vert\vert \pi_{\theta_{old}}(*\lvert s) \right) \right] $
+    \item Estimate this Expectation using roll-outs under the policy.
+\end{itemize}
+
+This gives us, 
+\begin{align*}
+     &\text{max}_{\theta} \hspace{5pt} L_{\theta_{old}}(\theta) \\
+     &\text{subject to }  \hspace{3pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+\end{align*}
+
+%Maybe Mention, they introduce a special rollout method, but they say for phyiscal systems like Robots not to use it so I won't waste our time. 
+
+\end{frame}
+
+\begin{frame}{Cheap Cost Function}
+
+We want to make $L_{\theta_{old}}(\theta)$ fast to compute. 
+
+% This more simple than I realized it shouldn't be one at a time, will remove. 
+\begin{itemize}
+    {\item $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \sum_a \pi_{\theta}(a \vert s) A_{\theta_{old}}(s,a) \hspace{5pt} \left(\text{Definition of $L$}\right)$}
+    {\item $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}(a \vert s)} \cdot A_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced sum over actions, with expectation}. \right)$}
+   {\item  $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}( a \vert s)} \cdot Q_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced A with an estimator $\hat{A}$}. \right)$ }
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Cheap constrained optimization solver}
+\begin{equation*}
+    \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
+     \text{subject to }  \hspace{1pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+\end{equation*}
+
+We use two steps, 
+\begin{itemize}
+    \item Compute Search Direction
+    \item Line Search in found Direction
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Computing Search Direction}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{trpo_funny_reference.png}
+    \label{fig:joke}
+\end{figure}
+
+    
+\end{frame}
+
+\begin{frame}{Line Search}
+    
+\end{frame}
+
+
+\begin{frame}{Trust Region Policy Optimization}
+ % OpenAI PsuedoCode Maybe? Bit too complicated for the slide   
+    
+\end{frame}
+
+\section{TRPO for Robot Learning}
+\begin{frame}{Experimental Results in TRPO Paper}    
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{trpo_experimental_results.png}
+    \label{fig:exp_results}
+\end{figure}
+
+
+\end{frame}
+
+\begin{frame}{External TRPO Robotics Applications}    
+
+\cite{benchmark_robots} wrote a paper bencmarking policy gradient algorithms for robotics, including TRPO. 
+\begin{itemize}
+    \item "TRPO achieving near-best final learning performance in all tasks." 
+    \item "Among these algorithms, the final performance of TRPO was never substantially worse compared to the best in each task."
+    \item  "TRPO’s performance was the least sensitive to hyper-parameter variations with the smallest interquartile range on both tasks."
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Thank you for listening}
+
+\href{https://www.youtube.com/watch?v=ovDfhvjpQd8&t=387s}{Robots following TRPO Policies}
+
+
+\end{frame}
+
+
+\begin{frame}{References}
+    \bibliographystyle{plainnat}
+    \bibliography{references}
+\end{frame}
+
+
+\end{document}
