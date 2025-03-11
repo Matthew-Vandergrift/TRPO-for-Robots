@@ -82,7 +82,7 @@ Recall the advantage function $A_{\pi}(s,a)$ defined as,
 \begin{equation*}
     A_{\pi}(s,a) =\  Q_{\pi}(s,a) - V_{\pi}(s)
 \end{equation*}
-This function tells us how "good" taking action is compared to the policy's action. 
+This function tells us how "good" taking action is compared to what we would have done otherwise.
 \end{frame}
 
 
@@ -151,7 +151,7 @@ The constraint is not computable due to $\text{max}_{s} f(s)$.
 
 \section{A Solution in Practice}
 
-\begin{frame}{The final steps}
+\begin{frame}{Make RL in Practice}
     \begin{itemize}
         \item Computable constraint 
         \vspace{4pt}
@@ -184,11 +184,11 @@ This gives us,
 \begin{frame}{Cheap Cost Function}
 
 We want to make $L_{\theta_{old}}(\theta)$ fast to compute. 
-\begin{itemize}
-    {\item $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \sum_a \pi_{\theta}(a \vert s) A_{\theta_{old}}(s,a) \hspace{5pt} \left(\text{Definition of $L$}\right)$}
-    {\item $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}(a \vert s)} \cdot A_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced sum over actions, with expectation}. \right)$}
-   {\item  $L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \mathbb{E}_{a \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}( a \vert s)} \cdot \hat{A}_{\theta_{old}}(s,a) \right] $ $\left( \text{Replaced A with an estimator $\hat{A}$}. \right)$ }
-\end{itemize}
+\begin{align*}
+    & L_{\theta_{old}}(\theta) = \sum_{s} \mu_{\pi_{\theta_{old}}} \sum_a \pi_{\theta}(a \vert s) A_{\theta_{old}}(s,a) \hspace{5pt} \left(\text{Definition of $L$}\right)
+    \intertext{We replace the sums by an expectation, and $A$ with estimator $\hat{A}$}
+   & L_{\theta_{old}}(\theta) = \mathbb{E}_{a \sim \pi_{\theta_{old}}, s \sim \pi_{\theta_{old}}} \left[ \frac{\pi_{\theta}(a \vert s)}{\pi_{\theta_{old}}( a \vert s)} \cdot \hat{A}_{\theta_{old}}(s,a) \right] 
+\end{align*}
 \end{frame}
 
 
