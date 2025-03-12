@@ -211,7 +211,7 @@ We want to make $L_{\theta_{old}}(\theta)$ fast to compute.
 \Large
 \begin{equation*}
     \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
-    \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+    \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_\theta \right) \leq \delta
 \end{equation*}
 \endgroup
 
@@ -226,13 +226,13 @@ We want to make $L_{\theta_{old}}(\theta)$ fast to compute.
 \begin{frame}{Cheap constrained optimization solver}
     \begin{equation*}
         \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
-        \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+        \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_\theta \right) \leq \delta
     \end{equation*}
 \only<1->{First Order of Taylor Expansion to $L_{\theta_{old}}(\theta)$}    
 \only<2>{\begin{align*} 
     & L_{\theta_{old}}(\theta) \approx L_{\theta_{old}}(\theta_{old}) + g^T (\theta - \theta_{old}) \\ 
     & L_{\theta_{old}}(\theta) \approx 0 + g^T (\theta - \theta_{old}) 
-    \intertext{Let $(\theta - \theta_{old}) = \Delta \theta$}
+    \intertext{Let $\Delta \theta = (\theta - \theta_{old}) $}
     & L_{\theta_{old}}(\theta) \approx g^T \Delta\theta 
 \end{align*}}
 \end{frame}
@@ -241,15 +241,15 @@ We want to make $L_{\theta_{old}}(\theta)$ fast to compute.
 \begin{frame}{Cheap constrained optimization solvers}
     \begin{equation*}
                 \text{max}_{\theta} \hspace{3pt} L_{\theta_{old}}(\theta) \hspace{3pt} 
-                 \text{subject to }  \hspace{1pt} \bar{D}_{KL}\left(\theta_{old}, \theta \right) \leq \delta
+                 \text{subject to }  \hspace{1pt} \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_\theta \right) \leq \delta
         \end{equation*}
     
     \only<1->{Second Order of Taylor Expansion of Contraint}    
     \only<2>{\begin{align*} 
-        & \hat{D}_{KL} (\theta_{old} \vert\vert \theta) \approx \hat{D}_{KL} (\theta_{old} \vert\vert \theta_{old})  + \nabla_{\theta} \hat{D}_{KL} (\theta_{old} \vert\vert \theta)\vert_{\theta_{old}} \cdot(\theta - \theta_{old}) + \\
+        & \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta_{old}} \right)  + \nabla_{\theta} \hat{D}_{KL} (pi_{\theta_{old}} \vert\vert \pi_\theta)\vert_{\theta_{old}} \cdot(\theta - \theta_{old}) + \\
         & \hspace{15pt} \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) \\
-        & \hat{D}_{KL} (\theta_{old} \vert\vert \theta) \approx 0 + 0 + \frac{1}{2}\Delta\theta ^TH\Delta\theta \\ 
-        &  \hat{D}_{KL} (\theta_{old} \vert\vert \theta) \approx  \frac{1}{2}\Delta\theta ^TH\Delta\theta 
+        & \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx 0 + 0 + \frac{1}{2}\Delta\theta ^TH\Delta\theta \\ 
+        & \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx  \frac{1}{2}\Delta\theta ^TH\Delta\theta 
     \end{align*}}
 \end{frame}
 
@@ -272,7 +272,7 @@ Now since it's a nice quadratic/convex contrainst we can solve,
     \begin{align*}
         \only<1->{\intertext{Use Lagrangian to solve the constrained optimization}} 
         \only<2->{& L = g^T\Delta\theta + \lambda \left( \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) - \delta \right)} \\ 
-        \only<3->{& \nabla_{\theta} L = 0 \implies g^t + \frac{\lambda}{2} H\Delta\theta = 0 } \\
+        \only<3->{& \nabla_{\theta} L = 0 \implies g^T + \frac{\lambda}{2} H\Delta\theta = 0 } \\
         \only<4->{& \Delta\theta =  -\frac{2}{\lambda}H^{-1}g} 
         \only<5->{\intertext{ This looks like SGD, set $\alpha = -\frac{2}{\lambda}$}} 
         \only<6->{& \Delta\theta =  \alpha H^{-1}g}
@@ -286,10 +286,10 @@ Now since it's a nice quadratic/convex contrainst we can solve,
         \only<2->{& \frac{1}{2}\Delta\theta ^TH\Delta\theta = \delta}  \\
         \only<3->{& \frac{1}{2}  \alpha H^{-1}g^T H \alpha H^{-1}g  = \delta} 
         \only<4->{\intertext{Now we simply re-arrange}}
-        \only<5->{& \alpha^2 g^tHg = 2\delta} \\
+        \only<5->{& \alpha^2 g^THg = 2\delta} \\
         \only<6->{& \alpha = \sqrt{\frac{2\delta}{g^tHg}}} 
         \only<7->{& \intertext{Subbing this into $\Delta\theta = \theta - \theta_{old} = \alpha H^{-1}g$ we get}}
-        \only<8->{& \theta = \theta_{old} + \sqrt{\frac{2\delta}{g^tHg}}H^{-1}g}
+        \only<8->{& \theta = \theta_{old} + \sqrt{\frac{2\delta}{g^THg}}H^{-1}g}
     \end{align*}
 \end{frame}
 
@@ -379,8 +379,8 @@ Now since it's a nice quadratic/convex contrainst we can solve,
     %\scalebox{1.5}{TLDR : Content: \greencheck \hspace{4pt} Presentation \tikzxmark}
     \begin{itemize}
         \item They leave out critical implementation details \citep{deepRL_matters}. 
-        \item They compare 'Vine' and 'Path', and vine is a different problem formulation 
-        \item  \href{https://jonathan-hui.medium.com/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a}{TRPO-Blog for Details}
+        \item They compare 'Vine' and 'Path', and Vine is a different problem formulation 
+        %\item  \href{https://jonathan-hui.medium.com/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a}{TRPO-Blog for Details}
     \end{itemize}
 
 \begin{figure}
