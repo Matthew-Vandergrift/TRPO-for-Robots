@@ -18,7 +18,7 @@
 \setbeamercolor*{item}{fg=blue}
 \captionsetup{labelfont={color=blue}}
 \usepackage{algorithm,algorithmic}
-
+\setbeamertemplate{footline}[frame number]
 \title{Trust Region Policy Optimization (TRPO)}
 \subtitle{Original Paper by \cite{trpo_paper}}
 
@@ -229,11 +229,11 @@ We want to make $L_{\theta_{old}}(\theta)$ fast to compute.
         \text{subject to }  \hspace{2pt} \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_\theta \right) \leq \delta
     \end{equation*}
 \only<1->{First Order of Taylor Expansion to $L_{\theta_{old}}(\theta)$}    
-\only<2>{\begin{align*} 
-    & L_{\theta_{old}}(\theta) \approx L_{\theta_{old}}(\theta_{old}) + g^T (\theta - \theta_{old}) \\ 
-    & L_{\theta_{old}}(\theta) \approx 0 + g^T (\theta - \theta_{old}) 
-    \intertext{Let $\Delta \theta = (\theta - \theta_{old}) $}
-    & L_{\theta_{old}}(\theta) \approx g^T \Delta\theta 
+\only<2->{\begin{align*} 
+    \only<2->{& L_{\theta_{old}}(\theta) \approx L_{\theta_{old}}(\theta_{old}) + g^T (\theta - \theta_{old})} \\ 
+    \only<3->{& L_{\theta_{old}}(\theta) \approx 0 + g^T (\theta - \theta_{old})} 
+    \only<4->{\intertext{Let $\Delta \theta = (\theta - \theta_{old}) $}}
+    \only<5->{& L_{\theta_{old}}(\theta) \approx g^T \Delta\theta} 
 \end{align*}}
 \end{frame}
 
@@ -246,10 +246,10 @@ We want to make $L_{\theta_{old}}(\theta)$ fast to compute.
     
     \only<1->{Second Order of Taylor Expansion of Contraint}    
     \only<2>{\begin{align*} 
-        & \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta_{old}} \right)  + \nabla_{\theta} \hat{D}_{KL} (pi_{\theta_{old}} \vert\vert \pi_\theta)\vert_{\theta_{old}} \cdot(\theta - \theta_{old}) + \\
-        & \hspace{15pt} \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) \\
-        & \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx 0 + 0 + \frac{1}{2}\Delta\theta ^TH\Delta\theta \\ 
-        & \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx  \frac{1}{2}\Delta\theta ^TH\Delta\theta 
+        \only<2->{& \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta_{old}} \right)  + \nabla_{\theta} \hat{D}_{KL} (pi_{\theta_{old}} \vert\vert \pi_\theta)\vert_{\theta_{old}} \cdot(\theta - \theta_{old}) + \\
+        \only<3->{& \hspace{15pt} \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old})}} \\
+        \only<4->{& \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx 0 + 0 + \frac{1}{2}\Delta\theta ^TH\Delta\theta} \\ 
+        only<5->{& \bar{D}_{KL}\left(\pi_{\theta_{old}}, \pi_{\theta} \right) \approx  \frac{1}{2}\Delta\theta ^TH\Delta\theta}
     \end{align*}}
 \end{frame}
 
@@ -268,7 +268,11 @@ Now since it's a nice quadratic/convex contrainst we can solve,
 \end{frame}
 
 \begin{frame}{Steps to Solve}
-    \vspace{-35.5pt}
+    \vspace{-20.5pt}
+    \begin{align*}
+        & \text{argmax}_{\theta}\hspace{4pt} g^T \Delta\theta \hspace{10pt} \text{subject to  } \frac{1}{2}\Delta\theta ^TH\Delta\theta \leq \delta
+    \end{align*}
+    \vspace{-45.5pt}
     \begin{align*}
         \only<1->{\intertext{Use Lagrangian to solve the constrained optimization}} 
         \only<2->{& L = g^T\Delta\theta + \lambda \left( \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) - \delta \right)} \\ 
