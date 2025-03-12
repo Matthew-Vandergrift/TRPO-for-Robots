@@ -264,14 +264,14 @@ Now since it's a nice quadratic/convex contrainst we can solve,
 \begin{equation*}
     \theta = \theta_{old} + \sqrt{\frac{2\delta}{g^tH^{-1}g}} H^{-1}g. 
 \end{equation*}
+\hyperlink{done_deriv}{\beamerbutton{skip derivation}}
 \end{frame}
-
 
 \begin{frame}{Steps to Solve}
     \vspace{-35.5pt}
     \begin{align*}
         \only<1->{\intertext{Use Lagrangian to solve the constrained optimization}} 
-        \only<2->{& L = g^T + \lambda \left( \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) - \delta \right)} \\ 
+        \only<2->{& L = g^T\Delta\theta + \lambda \left( \frac{1}{2}(\theta - \theta_{old})^TH(\theta - \theta_{old}) - \delta \right)} \\ 
         \only<3->{& \nabla_{\theta} L = 0 \implies g^t + \frac{\lambda}{2} H\Delta\theta = 0 } \\
         \only<4->{& \Delta\theta =  -\frac{2}{\lambda}H^{-1}g} 
         \only<5->{\intertext{ This looks like SGD, set $\alpha = -\frac{2}{\lambda}$}} 
@@ -295,6 +295,7 @@ Now since it's a nice quadratic/convex contrainst we can solve,
 
 
 \begin{frame}{$H^{-1}g$}
+\label{done_deriv}
 
 \begin{figure}
     \centering
